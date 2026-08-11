@@ -1,0 +1,101 @@
+:root {
+  --ntu-priority-accent: #3156a0;
+  --ntu-priority-muted: #667085;
+}
+
+#ntu-priority-memory-status,
+#ntu-priority-memory-status *,
+#ntu-priority-toast,
+#ntu-priority-toast * {
+  box-sizing: border-box;
+}
+
+#ntu-priority-memory-status {
+  display: inline-flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  color: var(--ntu-priority-muted);
+  font: 500 12px/1.4 Inter, "Noto Sans TC", sans-serif;
+  white-space: nowrap;
+}
+
+#ntu-priority-memory-status > span:first-child {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  color: #fff;
+  background: #98a2b3;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+#ntu-priority-memory-status[data-state="saved"] > span:first-child {
+  background: var(--ntu-priority-accent);
+}
+
+#ntu-priority-memory-status[data-state="working"] > span:first-child {
+  color: transparent;
+  background: transparent;
+  border: 2px solid #d0d5dd;
+  border-top-color: var(--ntu-priority-accent);
+  animation: ntu-priority-spin 700ms linear infinite;
+}
+
+#ntu-priority-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  z-index: 2147483647;
+  display: flex;
+  min-height: 44px;
+  padding: 0 16px;
+  align-items: center;
+  gap: 9px;
+  color: #fff;
+  background: #20242c;
+  border-radius: 7px;
+  box-shadow: 0 8px 24px rgb(16 24 40 / 24%);
+  font: 550 13px/1.4 Inter, "Noto Sans TC", sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 10px);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+#ntu-priority-toast > span:first-child {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  color: #20242c;
+  background: #fff;
+  border-radius: 50%;
+  font-weight: 800;
+}
+
+#ntu-priority-toast.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@keyframes ntu-priority-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 520px) {
+  #ntu-priority-memory-status {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ntu-priority-memory-status[data-state="working"] > span:first-child,
+  #ntu-priority-toast {
+    animation: none;
+    transition: none;
+  }
+}

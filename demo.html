@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant" data-ntu-priority-demo>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>志願序規劃器示範</title>
+    <link rel="stylesheet" href="demo.css">
+    <link rel="stylesheet" href="src/content.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="#" class="brand">NTU <span>臺大課程網</span></a>
+      <nav aria-label="主要導覽">
+        <a href="#">課程資訊</a><a href="#">課程網站</a><a href="#">正式選課</a><a href="#">預選課表</a>
+      </nav>
+    </header>
+    <div class="breadcrumb">首頁 / 志願序 / 列表 / 一般科目</div>
+    <main>
+      <div class="title-row"><h2>志願序</h2><span aria-hidden="true">ⓘ</span></div>
+      <div class="planner-shell">
+        <nav class="category-tabs" aria-label="志願序分類">
+          <a href="#">國文 <b>0</b></a><a href="#">英外文 <b>0</b></a><a href="#">微積分 <b>0</b></a><a class="active" href="#">一般科目 <b>5</b></a>
+        </nav>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>志願序</th><th>流水號</th><th>課程名稱</th><th>學分</th><th>授課老師</th><th>上課時間</th><th>本校上限</th><th></th></tr></thead>
+            <tbody>
+              <tr draggable="true" role="button" aria-roledescription="draggable" data-course-key="/courses/115-1/16235"><td><input type="number" value="1"></td><td>16235</td><td data-course-name><a href="/courses/115-1/16235">財務管理</a></td><td>3</td><td>張晏誠</td><td>三 7, 8, 9</td><td>85</td><td><button>移除</button></td></tr>
+              <tr draggable="true" role="button" aria-roledescription="draggable" data-course-key="/courses/115-1/16451"><td><input type="number" value="2"></td><td>16451</td><td data-course-name><a href="/courses/115-1/16451">策略管理</a></td><td>3</td><td>朱文儀</td><td>四 7, 8, 9</td><td>75</td><td><button>移除</button></td></tr>
+              <tr draggable="true" role="button" aria-roledescription="draggable" data-course-key="/courses/115-1/18918"><td><input type="number" value="3"></td><td>18918</td><td data-course-name><a href="/courses/115-1/18918">策略管理</a></td><td>3</td><td>陳忠仁</td><td>三 7, 8, 9</td><td>30</td><td><button>移除</button></td></tr>
+              <tr draggable="true" role="button" aria-roledescription="draggable" data-course-key="/courses/115-1/25902"><td><input type="number" value="4"></td><td>25902</td><td data-course-name><a href="/courses/115-1/25902">金融市場與行銷</a></td><td>3</td><td>魏啟林</td><td>一 7, 8, 9</td><td>36</td><td><button>移除</button></td></tr>
+              <tr draggable="true" role="button" aria-roledescription="draggable" data-course-key="/courses/115-1/31021"><td><input type="number" value="5"></td><td>31021</td><td data-course-name><a href="/courses/115-1/31021">收益管理</a></td><td>3</td><td>郭佳瑋</td><td>一 2, 3, 4</td><td>30</td><td><button>移除</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="demo-hint">這是離線示範頁。重新整理後，剛才安排的順序仍會保留。</p>
+    </main>
+    <script src="demo-runtime.js"></script>
+    <script src="demo-native.js?v=2"></script>
+    <script src="src/sort-utils.js"></script>
+    <script src="src/content.js"></script>
+  </body>
+</html>

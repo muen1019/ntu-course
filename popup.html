@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>臺大選課志願序規劃器</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="mark" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </span>
+        <div>
+          <h1>志願序規劃器</h1>
+          <p>臺大課程網輔助工具</p>
+        </div>
+      </header>
+
+      <section class="status" aria-label="資料說明">
+        <span class="status__icon" aria-hidden="true">✓</span>
+        <div>
+          <strong>排序由瀏覽器同步保存</strong>
+          <p>開啟瀏覽器同步即可跨同一帳號的裝置使用；不會送到臺大或本擴充功能伺服器。</p>
+        </div>
+      </section>
+
+      <ol>
+        <li>開啟臺大課程網的「志願序」頁面</li>
+        <li>照原本方式拖曳課程，或修改志願序數字</li>
+        <li>看到「已儲存並同步」後即可關閉頁面</li>
+      </ol>
+
+      <div class="actions">
+        <button id="open-course" type="button">開啟志願序頁面</button>
+        <button id="open-demo" class="secondary" type="button">先用示範頁試試</button>
+        <button id="clear-order" class="text-button" type="button">清除所有排序資料</button>
+      </div>
+      <p class="note">擴充功能不會改變課程網原有介面與操作方式。</p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

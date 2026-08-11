@@ -1,0 +1,163 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, "Noto Sans TC", system-ui, sans-serif;
+  color: #182033;
+  background: #fff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 356px;
+  margin: 0;
+  background: #fff;
+}
+
+main {
+  padding: 20px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mark {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(2, 4px);
+  grid-template-rows: repeat(3, 4px);
+  place-content: center;
+  gap: 4px;
+  background: #172a4a;
+  border-radius: 9px;
+}
+
+.mark i {
+  display: block;
+  background: #fff;
+  border-radius: 50%;
+}
+
+h1,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+header p {
+  margin-top: 2px;
+  color: #667085;
+  font-size: 12px;
+}
+
+.status {
+  display: flex;
+  margin-top: 18px;
+  padding: 14px;
+  align-items: flex-start;
+  gap: 10px;
+  background: #f5f8ff;
+  border: 1px solid #dbe7ff;
+  border-radius: 9px;
+}
+
+.status__icon {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #fff;
+  background: #2f6fed;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.status strong {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.status p {
+  margin-top: 4px;
+  color: #596579;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+ol {
+  margin: 18px 0;
+  padding-left: 24px;
+  color: #344054;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+}
+
+button {
+  width: 100%;
+  min-height: 42px;
+  color: #fff;
+  background: #2f6fed;
+  border: 1px solid #2f6fed;
+  border-radius: 8px;
+  font: 650 13px/1 Inter, "Noto Sans TC", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #2459be;
+}
+
+button:focus-visible {
+  outline: 3px solid rgb(47 111 237 / 28%);
+  outline-offset: 2px;
+}
+
+button.secondary {
+  color: #344054;
+  background: #fff;
+  border-color: #cfd7e4;
+}
+
+button.secondary:hover {
+  color: #2459be;
+  background: #f7f9fc;
+  border-color: #8fb2f7;
+}
+
+button.text-button {
+  min-height: 34px;
+  color: #667085;
+  background: transparent;
+  border-color: transparent;
+  font-weight: 500;
+}
+
+button.text-button:hover {
+  color: #b42318;
+  background: #fff5f4;
+}
+
+.note {
+  margin-top: 14px;
+  color: #7a8496;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}

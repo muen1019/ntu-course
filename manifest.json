@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "臺大選課志願序規劃器",
+  "version": "0.2.0",
+  "description": "在臺大課程網拖曳安排志願序，並將規劃結果安全地保存在瀏覽器本機。",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_title": "臺大選課志願序規劃器",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://course.ntu.edu.tw/priority/list/*"
+      ],
+      "js": [
+        "src/sort-utils.js",
+        "src/content.js"
+      ],
+      "css": [
+        "src/content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
