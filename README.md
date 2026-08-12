@@ -6,6 +6,8 @@
 
 ## 安裝
 
+兩台 Edge 若要使用同一個 Extension ID，請先閱讀 [`docs/edge-key-setup.md`](docs/edge-key-setup.md)。目前版本已設定固定公開金鑰；私密金鑰只保存在 repo 外，不要提交到 GitHub。
+
 ### Edge
 
 1. 開啟 `edge://extensions/`

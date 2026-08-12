@@ -1,6 +1,8 @@
 node_modules/
 *.zip
 *.crx
+*.pem
+*.der
 .env
 .env.*
 .DS_Store
