@@ -270,7 +270,8 @@
   }
 
   async function applySavedOrder() {
-    if (state.applying || !state.savedOrder?.length || Date.now() < state.ignoreRestoreUntil) {
+    if (state.applying || state.rowGestureActive
+      || !state.savedOrder?.length || Date.now() < state.ignoreRestoreUntil) {
       return;
     }
 
@@ -319,7 +320,7 @@
   }
 
   async function persistIfChanged() {
-    if (state.applying) {
+    if (state.applying || state.rowGestureActive) {
       return;
     }
 
@@ -392,7 +393,7 @@
   function scheduleHydrate() {
     window.clearTimeout(state.refreshTimer);
     state.refreshTimer = window.setTimeout(() => {
-      if (Date.now() >= state.ignoreRestoreUntil) {
+      if (!state.rowGestureActive && Date.now() >= state.ignoreRestoreUntil) {
         state.hydratePromise = hydrate();
       }
     }, 100);
@@ -404,8 +405,10 @@
 
   document.addEventListener("pointerdown", (event) => {
     if (isPriorityRowTarget(event.target)) {
+      window.clearTimeout(state.refreshTimer);
+      window.clearTimeout(state.persistTimer);
       state.rowGestureActive = true;
-      state.ignoreRestoreUntil = Date.now() + 1200;
+      state.ignoreRestoreUntil = Number.POSITIVE_INFINITY;
     }
   }, true);
 
@@ -417,11 +420,16 @@
   }, true);
 
   document.addEventListener("pointercancel", () => {
-    state.rowGestureActive = false;
+    if (state.rowGestureActive) {
+      state.rowGestureActive = false;
+      state.ignoreRestoreUntil = Date.now();
+      scheduleHydrate();
+    }
   }, true);
 
   document.addEventListener("dragend", (event) => {
     if (isPriorityRowTarget(event.target)) {
+      state.rowGestureActive = false;
       schedulePersist(120);
     }
   }, true);
