@@ -11,6 +11,8 @@ test("manifest is a minimal Manifest V3 extension", () => {
   assert.equal(manifest.manifest_version, 3);
   assert.deepEqual(manifest.permissions, ["storage"]);
   assert.deepEqual(manifest.content_scripts[0].matches, ["https://course.ntu.edu.tw/priority/list/*"]);
+  assert.deepEqual(manifest.content_scripts[1].matches, ["https://course.ntu.edu.tw/priority/table"]);
+  assert.ok(manifest.content_scripts[1].js.includes("src/table.js"));
 });
 
 test("manifest contains a stable public key for development installs", () => {

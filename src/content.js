@@ -16,6 +16,7 @@
   const state = {
     applying: false,
     body: null,
+    hydratePromise: Promise.resolve(),
     ignoreRestoreUntil: 0,
     savedOrder: null,
     syncAvailable: false,
@@ -344,6 +345,31 @@
     state.persistTimer = window.setTimeout(persistIfChanged, delay);
   }
 
+  async function saveBeforePriorityNavigation(event) {
+    const anchor = event.target instanceof Element
+      ? event.target.closest('a[href^="/priority/"]')
+      : null;
+    if (!anchor || event.defaultPrevented || event.button !== 0
+      || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+
+    const targetUrl = new URL(anchor.href, location.href);
+    if (targetUrl.pathname === location.pathname) {
+      return;
+    }
+
+    // NTU uses client-side navigation between list and timetable views. Waiting
+    // for the storage write before a full navigation prevents a pending drag or
+    // number edit from being discarded when the list component is unmounted.
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    window.clearTimeout(state.persistTimer);
+    await state.hydratePromise;
+    await persistIfChanged();
+    location.assign(targetUrl.href);
+  }
+
   async function hydrate() {
     ensureStatus();
     const rows = currentRows();
@@ -367,7 +393,7 @@
     window.clearTimeout(state.refreshTimer);
     state.refreshTimer = window.setTimeout(() => {
       if (Date.now() >= state.ignoreRestoreUntil) {
-        hydrate();
+        state.hydratePromise = hydrate();
       }
     }, 100);
   }
@@ -412,6 +438,8 @@
     }
   }, true);
 
+  document.addEventListener("click", saveBeforePriorityNavigation, true);
+
   const observer = new MutationObserver((mutations) => {
     const tableChanged = mutations.some((mutation) =>
       mutation.type === "childList"
@@ -447,5 +475,5 @@
     }
   });
 
-  hydrate();
+  state.hydratePromise = hydrate();
 })();

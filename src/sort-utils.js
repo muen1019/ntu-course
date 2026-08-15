@@ -70,10 +70,40 @@
     return `ntu-priority-planner:v1:${safeCategory}`;
   }
 
+  function sortBySavedOrders(currentKeys, savedOrders) {
+    const ranks = new Map();
+    (Array.isArray(savedOrders) ? savedOrders : []).forEach((savedOrder, categoryIndex) => {
+      uniqueStrings(savedOrder).forEach((key, rank) => {
+        if (!ranks.has(key)) {
+          ranks.set(key, { categoryIndex, rank });
+        }
+      });
+    });
+
+    return (Array.isArray(currentKeys) ? currentKeys : [])
+      .map((key, originalIndex) => ({ key, originalIndex, savedRank: ranks.get(key) }))
+      .sort((left, right) => {
+        if (!left.savedRank && !right.savedRank) {
+          return left.originalIndex - right.originalIndex;
+        }
+        if (!left.savedRank) {
+          return 1;
+        }
+        if (!right.savedRank) {
+          return -1;
+        }
+        return left.savedRank.categoryIndex - right.savedRank.categoryIndex
+          || left.savedRank.rank - right.savedRank.rank
+          || left.originalIndex - right.originalIndex;
+      })
+      .map(({ key }) => key);
+  }
+
   return {
     moveByOffset,
     moveKey,
     normalizeOrder,
+    sortBySavedOrders,
     storageKey,
     uniqueStrings
   };

@@ -4,6 +4,7 @@ const {
   moveByOffset,
   moveKey,
   normalizeOrder,
+  sortBySavedOrders,
   storageKey,
   uniqueStrings
 } = require("../src/sort-utils.js");
@@ -39,4 +40,24 @@ test("moveByOffset clamps at the beginning and end", () => {
 test("storageKey creates a stable namespaced key", () => {
   assert.equal(storageKey("Common Courses"), "ntu-priority-planner:v1:common-courses");
   assert.equal(storageKey(""), "ntu-priority-planner:v1:unknown");
+});
+
+test("sortBySavedOrders mirrors saved priorities in a timetable cell", () => {
+  assert.deepEqual(
+    sortBySavedOrders(
+      ["course-new", "course-low", "course-high"],
+      [[], [], [], ["course-high", "course-low"]]
+    ),
+    ["course-high", "course-low", "course-new"]
+  );
+});
+
+test("sortBySavedOrders keeps category order and unknown course stability", () => {
+  assert.deepEqual(
+    sortBySavedOrders(
+      ["unknown-b", "common-2", "foreign-2", "unknown-a", "common-1", "foreign-1"],
+      [[], ["foreign-1", "foreign-2"], [], ["common-1", "common-2"]]
+    ),
+    ["foreign-1", "foreign-2", "common-1", "common-2", "unknown-b", "unknown-a"]
+  );
 });
