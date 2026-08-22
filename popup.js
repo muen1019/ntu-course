@@ -6,6 +6,11 @@
     window.close();
   });
 
+  document.querySelector("#open-import").addEventListener("click", () => {
+    chrome.tabs.create({ url: "https://if192.aca.ntu.edu.tw/rtcourse/coutake/rt1-runo2-new" });
+    window.close();
+  });
+
   document.querySelector("#open-demo").addEventListener("click", () => {
     chrome.tabs.create({ url: chrome.runtime.getURL("demo.html") });
     window.close();

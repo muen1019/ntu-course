@@ -13,6 +13,14 @@ test("manifest is a minimal Manifest V3 extension", () => {
   assert.deepEqual(manifest.content_scripts[0].matches, ["https://course.ntu.edu.tw/priority/list/*"]);
   assert.deepEqual(manifest.content_scripts[1].matches, ["https://course.ntu.edu.tw/priority/table"]);
   assert.ok(manifest.content_scripts[1].js.includes("src/table.js"));
+  assert.deepEqual(manifest.content_scripts[2].matches, [
+    "https://if192.aca.ntu.edu.tw/rtcourse/coutake/rt1-runo2-new*"
+  ]);
+  assert.deepEqual(manifest.content_scripts[2].js, [
+    "src/sort-utils.js",
+    "src/import-utils.js",
+    "src/import.js"
+  ]);
 });
 
 test("manifest contains a stable public key for development installs", () => {

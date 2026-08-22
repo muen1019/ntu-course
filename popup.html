@@ -22,7 +22,7 @@
         <span class="status__icon" aria-hidden="true">✓</span>
         <div>
           <strong>排序由瀏覽器同步保存</strong>
-          <p>開啟瀏覽器同步即可跨同一帳號的裝置使用；不會送到臺大或本擴充功能伺服器。</p>
+          <p>平時只保存在瀏覽器；只有你在差異預覽中確認後，才會直接送到臺大選課系統。</p>
         </div>
       </section>
 
@@ -30,14 +30,16 @@
         <li>開啟臺大課程網的「志願序」頁面</li>
         <li>照原本方式拖曳課程，或修改志願序數字</li>
         <li>看到「已儲存並同步」後即可關閉頁面</li>
+        <li>到選課系統預覽差異，再確認正式匯入</li>
       </ol>
 
       <div class="actions">
         <button id="open-course" type="button">開啟志願序頁面</button>
+        <button id="open-import" class="secondary" type="button">開啟選課匯入頁面</button>
         <button id="open-demo" class="secondary" type="button">先用示範頁試試</button>
         <button id="clear-order" class="text-button" type="button">清除所有排序資料</button>
       </div>
-      <p class="note">擴充功能不會改變課程網原有介面與操作方式。</p>
+      <p class="note">正式匯入前一定會列出課程與順序供你確認。</p>
     </main>
     <script src="popup.js"></script>
   </body>

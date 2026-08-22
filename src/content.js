@@ -16,8 +16,9 @@
   const state = {
     applying: false,
     body: null,
-    hydratePromise: Promise.resolve(),
-    ignoreRestoreUntil: 0,
+    initialRestoreComplete: false,
+    restoreCancelled: false,
+    restorePromise: null,
     savedOrder: null,
     syncAvailable: false,
     refreshTimer: null,
@@ -218,6 +219,32 @@
     input.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  async function commitNativeInputValue(input, value) {
+    input.focus({ preventScroll: true });
+    setNativeInputValue(input, value);
+    await afterRender();
+    if (state.rowGestureActive || state.restoreCancelled) {
+      return false;
+    }
+    input.blur();
+    await afterRender();
+    return true;
+  }
+
+  async function waitForCoursePosition(courseKey, desiredIndex, timeoutMs = 800) {
+    const deadline = performance.now() + timeoutMs;
+    while (performance.now() < deadline) {
+      if (state.rowGestureActive || state.restoreCancelled) {
+        return false;
+      }
+      if (currentRows()[desiredIndex]?.dataset.ntuPriorityKey === courseKey) {
+        return true;
+      }
+      await new Promise((resolve) => window.setTimeout(resolve, 16));
+    }
+    return currentRows()[desiredIndex]?.dataset.ntuPriorityKey === courseKey;
+  }
+
   async function saveOrder(order, existingRecord) {
     const record = existingRecord || {
       version: 1,
@@ -246,38 +273,15 @@
     return state.syncAvailable ? "本機順序已儲存並同步" : "本機順序已儲存（同步待恢復）";
   }
 
-  function applyDomFallback(desiredOrder) {
-    const rows = currentRows();
-    const body = rows[0]?.parentElement;
-    if (!body) {
-      return;
-    }
-
-    const byKey = new Map(rows.map((row) => [row.dataset.ntuPriorityKey, row]));
-    desiredOrder.forEach((key) => {
-      const row = byKey.get(key);
-      if (row) {
-        body.appendChild(row);
-      }
-    });
-
-    currentRows().forEach((row, index) => {
-      const input = row.cells?.[0]?.querySelector('input[type="number"]');
-      if (input) {
-        input.value = String(index + 1);
-      }
-    });
-  }
-
   async function applySavedOrder() {
     if (state.applying || state.rowGestureActive
-      || !state.savedOrder?.length || Date.now() < state.ignoreRestoreUntil) {
-      return;
+      || state.restoreCancelled || !state.savedOrder?.length) {
+      return false;
     }
 
     const before = currentOrder();
     if (!before.length) {
-      return;
+      return false;
     }
     const desired = utils.normalizeOrder(state.savedOrder, before);
 
@@ -287,16 +291,24 @@
       await saveOrder(desired);
     }
 
+    if (state.rowGestureActive || state.restoreCancelled) {
+      return false;
+    }
+
     if (orderSignature(before) === orderSignature(desired)) {
       setStatus(savedStatus(), "saved");
-      return;
+      return true;
     }
 
     state.applying = true;
     setStatus("正在還原本機順序…", "working");
 
-    if (!isDemo) {
+    try {
       for (let desiredIndex = 0; desiredIndex < desired.length; desiredIndex += 1) {
+        if (state.rowGestureActive || state.restoreCancelled) {
+          return false;
+        }
+
         const rows = currentRows();
         if (rows[desiredIndex]?.dataset.ntuPriorityKey === desired[desiredIndex]) {
           continue;
@@ -304,19 +316,34 @@
 
         const desiredRow = rows.find((row) => row.dataset.ntuPriorityKey === desired[desiredIndex]);
         const input = desiredRow?.cells?.[0]?.querySelector('input[type="number"]');
-        if (input) {
-          setNativeInputValue(input, String(desiredIndex + 1));
-          await afterRender();
+        if (!input) {
+          setStatus("網站無法完成順序還原，請重新整理後重試", "idle");
+          return false;
+        }
+
+        if (!await commitNativeInputValue(input, String(desiredIndex + 1))) {
+          return false;
+        }
+        if (!await waitForCoursePosition(desired[desiredIndex], desiredIndex)) {
+          setStatus("網站無法完成順序還原，請重新整理後重試", "idle");
+          return false;
         }
       }
-    }
 
-    if (orderSignature(currentOrder()) !== orderSignature(desired)) {
-      applyDomFallback(desired);
-    }
+      if (state.rowGestureActive || state.restoreCancelled) {
+        return false;
+      }
 
-    state.applying = false;
-    setStatus("已還原本機順序", "saved");
+      if (orderSignature(currentOrder()) !== orderSignature(desired)) {
+        setStatus("網站無法完成順序還原，請重新整理後重試", "idle");
+        return false;
+      }
+
+      setStatus("已還原本機順序", "saved");
+      return true;
+    } finally {
+      state.applying = false;
+    }
   }
 
   async function persistIfChanged() {
@@ -341,7 +368,6 @@
   }
 
   function schedulePersist(delay = 180) {
-    state.ignoreRestoreUntil = Date.now() + Math.max(delay + 400, 700);
     window.clearTimeout(state.persistTimer);
     state.persistTimer = window.setTimeout(persistIfChanged, delay);
   }
@@ -366,12 +392,13 @@
     event.preventDefault();
     event.stopImmediatePropagation();
     window.clearTimeout(state.persistTimer);
-    await state.hydratePromise;
+    await restoreInitialOrder();
     await persistIfChanged();
     location.assign(targetUrl.href);
   }
 
-  async function hydrate() {
+  async function performInitialRestore() {
+    state.restoreCancelled = false;
     ensureStatus();
     const rows = currentRows();
     if (!rows.length) {
@@ -383,18 +410,41 @@
     const stored = await readStoredRecord();
     state.savedOrder = stored?.order || null;
 
-    if (state.savedOrder?.length) {
-      await applySavedOrder();
+    if (state.savedOrder?.length && !state.rowGestureActive && !state.restoreCancelled) {
+      const restored = await applySavedOrder();
+      if (!restored && (state.rowGestureActive || state.restoreCancelled)) {
+        setStatus("排序變更後將自動儲存", "idle");
+      }
     } else {
       setStatus("排序變更後將自動儲存", "idle");
     }
+
+    state.initialRestoreComplete = true;
+    window.clearTimeout(state.refreshTimer);
+    observer.disconnect();
   }
 
-  function scheduleHydrate() {
+  function restoreInitialOrder() {
+    if (state.initialRestoreComplete) {
+      return Promise.resolve();
+    }
+    if (!state.restorePromise) {
+      state.restorePromise = performInitialRestore()
+        .finally(() => {
+          state.restorePromise = null;
+        });
+    }
+    return state.restorePromise;
+  }
+
+  function scheduleInitialRestore() {
+    if (state.initialRestoreComplete) {
+      return;
+    }
     window.clearTimeout(state.refreshTimer);
     state.refreshTimer = window.setTimeout(() => {
-      if (!state.rowGestureActive && Date.now() >= state.ignoreRestoreUntil) {
-        state.hydratePromise = hydrate();
+      if (!state.rowGestureActive) {
+        restoreInitialOrder();
       }
     }, 100);
   }
@@ -408,7 +458,9 @@
       window.clearTimeout(state.refreshTimer);
       window.clearTimeout(state.persistTimer);
       state.rowGestureActive = true;
-      state.ignoreRestoreUntil = Number.POSITIVE_INFINITY;
+      if (!state.initialRestoreComplete) {
+        state.restoreCancelled = true;
+      }
     }
   }, true);
 
@@ -422,8 +474,6 @@
   document.addEventListener("pointercancel", () => {
     if (state.rowGestureActive) {
       state.rowGestureActive = false;
-      state.ignoreRestoreUntil = Date.now();
-      scheduleHydrate();
     }
   }, true);
 
@@ -435,7 +485,7 @@
   }, true);
 
   document.addEventListener("change", (event) => {
-    if (event.target.matches?.(`${rowSelector()} input[type="number"]`)) {
+    if (!state.applying && event.target.matches?.(`${rowSelector()} input[type="number"]`)) {
       schedulePersist(220);
     }
   }, true);
@@ -458,7 +508,7 @@
         ))
     );
     if (tableChanged) {
-      scheduleHydrate();
+      scheduleInitialRestore();
     }
   });
 
@@ -467,7 +517,16 @@
     if (areaName === "sync" && changes[currentStorageKey]) {
       state.syncAvailable = true;
       state.savedOrder = changes[currentStorageKey].newValue?.order || null;
-      scheduleHydrate();
+      if (state.initialRestoreComplete) {
+        const current = currentOrder();
+        const desired = utils.normalizeOrder(state.savedOrder, current);
+        setStatus(
+          orderSignature(current) === orderSignature(desired)
+            ? savedStatus()
+            : "其他裝置已有新順序，重新整理後套用",
+          orderSignature(current) === orderSignature(desired) ? "saved" : "idle"
+        );
+      }
       return;
     }
 
@@ -479,9 +538,8 @@
       state.savedOrder = changes[localCacheKey]?.newValue?.order
         || changes[currentStorageKey]?.newValue?.order
         || null;
-      scheduleHydrate();
     }
   });
 
-  state.hydratePromise = hydrate();
+  restoreInitialOrder();
 })();
