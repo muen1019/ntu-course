@@ -152,7 +152,7 @@ Limited Use certification 的所有聲明必須依實際情況逐項閱讀後勾
 - [x] ZIP 內的 128×128 PNG extension icon：`icons/icon-128.png`
 - [x] 16×16、32×32、48×48 工具列與管理頁 icon
 - [x] 三張 1280×800 實際功能截圖：`store-assets/screenshots/`
-- [ ] 440×280 small promotional tile
+- [x] 440×280 small promotional tile：`store-assets/promo/small-promo-440x280.png`
 - [ ] 1400×560 marquee promotional tile（選填）
 - [ ] YouTube promotional video（選填）
 

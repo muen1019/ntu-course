@@ -6,6 +6,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_DIR = ROOT / "screenshot"
 OUTPUT_DIR = ROOT / "store-assets" / "screenshots"
+PROMO_DIR = ROOT / "store-assets" / "promo"
 ICON_PATH = ROOT / "icons" / "icon-128.png"
 
 CANVAS_SIZE = (1280, 800)
@@ -106,7 +107,31 @@ def render_screenshot(spec: dict[str, object]) -> Path:
     return output_path
 
 
+def render_small_promo() -> Path:
+    width, height = 440, 280
+    canvas = Image.new("RGB", (width, height), NAVY)
+    draw = ImageDraw.Draw(canvas)
+    draw.rounded_rectangle((-70, 176, 300, 350), radius=86, fill="#294A84")
+    draw.rounded_rectangle((248, -80, 520, 114), radius=88, fill=INDIGO)
+    draw.ellipse((320, 176, 480, 336), fill="#294A84")
+
+    glow = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    ImageDraw.Draw(glow).ellipse((116, 38, 324, 246), fill=(111, 144, 222, 90))
+    glow = glow.filter(ImageFilter.GaussianBlur(32))
+    canvas = Image.alpha_composite(canvas.convert("RGBA"), glow)
+
+    icon = Image.open(ICON_PATH).convert("RGBA").resize((184, 184), Image.Resampling.LANCZOS)
+    canvas.alpha_composite(icon, ((width - icon.width) // 2, (height - icon.height) // 2))
+
+    PROMO_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = PROMO_DIR / "small-promo-440x280.png"
+    canvas.convert("RGB").save(output_path, format="PNG", optimize=True)
+    return output_path
+
+
 if __name__ == "__main__":
     for screenshot_spec in SCREENSHOTS:
         result = render_screenshot(screenshot_spec)
         print(f"Created {result.relative_to(ROOT)}")
+    promo_result = render_small_promo()
+    print(f"Created {promo_result.relative_to(ROOT)}")

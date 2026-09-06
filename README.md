@@ -91,7 +91,7 @@ npm run package:chrome
 
 產生的 ZIP 會放在 `dist/`，只包含執行所需檔案。打包程序會自動移除只供 Edge／本機開發固定 ID 使用的 manifest `key`，而不修改 source manifest；Chrome Web Store 版本由商店管理自己的 Item ID，細節見 [`docs/edge-key-setup.md`](docs/edge-key-setup.md)。
 
-目前圖示已完成，送審前仍需準備至少一張商店截圖與 440×280 small promotional tile，並在 GitHub Pages 公開隱私權政策頁面。
+圖示、三張商店截圖、440×280 small promotional tile 與公開隱私權政策均已準備完成，檔案與 Dashboard 文案請見上架資料文件。
 
 ## 後續範圍
 
