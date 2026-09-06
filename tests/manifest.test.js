@@ -35,7 +35,7 @@ test("manifest is a minimal Manifest V3 extension", () => {
 });
 
 test("manifest and package versions stay in sync", () => {
-  assert.equal(manifest.version, "0.7.4");
+  assert.equal(manifest.version, "1.0.0");
   assert.equal(manifest.version, packageJson.version);
 });
 

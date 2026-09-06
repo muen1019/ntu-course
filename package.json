@@ -1,6 +1,6 @@
 {
   "name": "ntu-course-priority-planner",
-  "version": "0.7.4",
+  "version": "1.0.0",
   "private": true,
   "description": "臺大選課志願序瀏覽器擴充功能",
   "scripts": {

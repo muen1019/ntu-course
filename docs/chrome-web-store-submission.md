@@ -1,6 +1,6 @@
 # Chrome Web Store 上架資料
 
-適用版本：0.7.4<br>
+適用版本：1.0.0<br>
 文件日期：2026 年 9 月 6 日
 
 本文件中的文案可以直接貼入 Chrome Web Store Developer Dashboard。正式送審前，請先確認公開網址可在無登入、無 GitHub 權限的無痕視窗中開啟。

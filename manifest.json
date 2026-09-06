@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "臺大選課志願序規劃器",
-  "version": "0.7.4",
+  "version": "1.0.0",
   "description": "在臺大課程網安排志願序，並於確認差異後安全匯入選課系統。",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoh90MpKCQ0FvFWyKGEo7JyV2LNWHwd2WkcJuB/LFC3bECftgPkI2EnZ7I/UhtYmNSqlCJCh0utWILKF2JiiUcQJcXxj12oaTvP5n0NjjJIIuQDehCuJtxH1ig5rXJDw3Km9iAJMS02mggsXQreM+7b/eUdl5kgLzhHocYJ/LjiNzN+SgPxXbvusa+2qjpOEQkFxHxTaBy/diNizTtlkAXd10/83qMk/4SOlG7DakN/dbtdk+Oep585sx60ADfc71KbhflPl8g6pA+4XvxeaNEg2RCAWQrHgdMaljTja6vQm0f3LfcQE7OP+uihkeW/IyZLAfEZwwCS7pSOWIjpL/wQIDAQAB",
   "permissions": [
