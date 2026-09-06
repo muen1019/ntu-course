@@ -24,6 +24,7 @@
   display: grid;
   min-width: 0;
   gap: 4px;
+  text-align: left;
 }
 
 .ntu-import-panel__copy strong {
@@ -252,6 +253,113 @@
 
 .ntu-import-action--unavailable {
   color: #b54708;
+}
+
+.ntu-stage2-dialog {
+  width: min(1240px, 100%);
+}
+
+.ntu-stage2-table th:nth-child(1),
+.ntu-stage2-table td:nth-child(1) {
+  width: 64px;
+  text-align: center;
+}
+
+.ntu-stage2-table th:nth-child(3),
+.ntu-stage2-table td:nth-child(3) {
+  min-width: 130px;
+}
+
+.ntu-stage2-table th:nth-child(4),
+.ntu-stage2-table td:nth-child(4) {
+  min-width: 112px;
+  text-align: center;
+}
+
+.ntu-stage2-table th:nth-child(5),
+.ntu-stage2-table td:nth-child(5),
+.ntu-stage2-table th:nth-child(6),
+.ntu-stage2-table td:nth-child(6) {
+  min-width: 190px;
+}
+
+.ntu-import-quota {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ntu-import-quota--available {
+  color: #19603c;
+}
+
+.ntu-import-quota--competitive {
+  color: #b54708;
+}
+
+.ntu-import-quota--full {
+  color: #b42318;
+}
+
+.ntu-import-quota--unknown {
+  color: #667085;
+}
+
+.ntu-import-row--conflict td {
+  background: #fffbeb;
+}
+
+.ntu-import-row--conflict-resolved td {
+  background: #ecfdf3;
+}
+
+.ntu-import-row--readd td {
+  background: #eff8ff;
+}
+
+.ntu-import-conflict {
+  color: #b42318;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.ntu-import-drop-options {
+  display: grid;
+  gap: 7px;
+}
+
+.ntu-import-drop-option {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: #7a2e0e;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.ntu-import-drop-option input {
+  width: 15px;
+  height: 15px;
+  margin: 1px 0 0;
+  accent-color: #b42318;
+}
+
+.ntu-import-drop-option:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.ntu-import-drop-warning {
+  margin: 14px 0 0;
+  padding: 11px 13px;
+  border: 1px solid #f5b7b1;
+  border-radius: 8px;
+  background: #fff4f2;
+  color: #912018;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
 }
 
 .ntu-import-warning {

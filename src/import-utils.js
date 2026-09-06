@@ -43,6 +43,26 @@
     return serials;
   }
 
+  function remainingSeats(limit, selected) {
+    if (limit === null || limit === undefined || limit === ""
+      || selected === null || selected === undefined || selected === "") {
+      return null;
+    }
+    const normalizedLimit = Number(limit);
+    const normalizedSelected = Number(selected);
+    if (!Number.isFinite(normalizedLimit) || !Number.isFinite(normalizedSelected)) {
+      return null;
+    }
+    return Math.max(Math.trunc(normalizedLimit) - Math.trunc(normalizedSelected), 0);
+  }
+
+  function secondStageSelectionStatus(priorityText, hasPriorityAction = false) {
+    const normalizedPriority = String(priorityText || "").trim();
+    return hasPriorityAction || /\d/.test(normalizedPriority)
+      ? "registered"
+      : "selected";
+  }
+
   function normalizeCourses(courses) {
     const normalized = new Map();
     (Array.isArray(courses) ? courses : []).forEach((course) => {
@@ -52,6 +72,130 @@
       }
     });
     return normalized;
+  }
+
+  function parseMeetingSlots(value) {
+    const text = String(value || "").replace(/[，、,]/g, " ");
+    const slots = [];
+    const seen = new Set();
+    const tokenPattern = /([一二三四五六日天])?\s*([0-9XABCD])/gi;
+    let currentDay = null;
+    let match;
+
+    while ((match = tokenPattern.exec(text))) {
+      if (match[1]) {
+        currentDay = match[1] === "天" ? "日" : match[1];
+      }
+      if (!currentDay) {
+        continue;
+      }
+
+      const slot = `${currentDay}${match[2].toUpperCase()}`;
+      if (!seen.has(slot)) {
+        seen.add(slot);
+        slots.push(slot);
+      }
+    }
+
+    return slots;
+  }
+
+  function meetingSlots(course) {
+    const supplied = Array.isArray(course?.slots) ? course.slots : parseMeetingSlots(course?.schedule);
+    return new Set(supplied.map((slot) => String(slot).trim()).filter(Boolean));
+  }
+
+  function findScheduleConflicts(course, selectedCourses) {
+    const candidateSlots = meetingSlots(course);
+    if (!candidateSlots.size) {
+      return [];
+    }
+
+    return (Array.isArray(selectedCourses) ? selectedCourses : []).flatMap((selected) => {
+      if (normalizeSerial(selected?.serial) === normalizeSerial(course?.serial)) {
+        return [];
+      }
+      const overlappingSlots = [...meetingSlots(selected)].filter((slot) => candidateSlots.has(slot));
+      return overlappingSlots.length ? [{ ...selected, overlappingSlots }] : [];
+    });
+  }
+
+  function buildSecondStagePlan({ sourceSerials, candidateCourses, selectedCourses }) {
+    const source = uniqueSerials(sourceSerials);
+    const candidates = normalizeCourses(candidateCourses);
+    const selected = normalizeCourses(selectedCourses);
+    const confirmedSelected = [...selected.values()]
+      .filter((course) => course.selectionStatus !== "registered");
+    const missing = source.filter((serial) => !candidates.has(serial) && !selected.has(serial));
+    const ignoredSelected = source
+      .filter((serial) => selected.has(serial))
+      .map((serial) => ({ ...candidates.get(serial), ...selected.get(serial) }));
+    const unavailable = source
+      .filter((serial) => candidates.has(serial) && !candidates.get(serial)?.actionUrl && !selected.has(serial))
+      .map((serial) => candidates.get(serial));
+    const additions = source
+      .filter((serial) => candidates.get(serial)?.actionUrl && !selected.has(serial))
+      .map((serial) => {
+        const course = candidates.get(serial);
+        return {
+          ...course,
+          conflicts: findScheduleConflicts(course, confirmedSelected)
+        };
+      });
+    const operations = additions.map((course) => ({
+      type: "add",
+      serial: course.serial,
+      actionUrl: course.actionUrl,
+      priority: source.indexOf(course.serial) + 1
+    }));
+
+    return {
+      ok: true,
+      source,
+      missing,
+      ignoredSelected,
+      unavailable,
+      additions,
+      selectedCourses: [...selected.values()],
+      operations,
+      conflictCount: additions.filter((course) => course.conflicts.length).length,
+      mutationCount: operations.length
+    };
+  }
+
+  function buildSecondStageAddOperations(plan, selectedDropSerials = []) {
+    const source = uniqueSerials(plan?.source);
+    const additions = new Map((Array.isArray(plan?.operations) ? plan.operations : [])
+      .map((operation) => [normalizeSerial(operation?.serial), operation])
+      .filter(([serial]) => serial));
+    const additionCourses = normalizeCourses(plan?.additions);
+    const selectedSource = normalizeCourses(plan?.ignoredSelected);
+    const readds = new Set(uniqueSerials(selectedDropSerials));
+
+    return source.flatMap((serial) => {
+      if (additions.has(serial)) {
+        const conflicts = Array.isArray(additionCourses.get(serial)?.conflicts)
+          ? additionCourses.get(serial).conflicts
+          : [];
+        const everyConflictDropped = conflicts.every((conflict) =>
+          readds.has(normalizeSerial(conflict?.serial))
+        );
+        if (!everyConflictDropped) {
+          return [];
+        }
+        return [{ ...additions.get(serial) }];
+      }
+      if (readds.has(serial) && selectedSource.has(serial)) {
+        return [{
+          type: "add",
+          serial,
+          actionUrl: null,
+          priority: source.indexOf(serial) + 1,
+          readd: true
+        }];
+      }
+      return [];
+    });
   }
 
   function buildImportPlan({
@@ -168,8 +312,14 @@
 
   return {
     buildImportPlan,
+    buildSecondStageAddOperations,
+    buildSecondStagePlan,
     executeAddOperations,
+    findScheduleConflicts,
     normalizeSerial,
+    parseMeetingSlots,
+    remainingSeats,
+    secondStageSelectionStatus,
     serialFromCourseKey,
     uniqueSerials
   };

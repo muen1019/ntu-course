@@ -8,3 +8,7 @@ node_modules/
 .DS_Store
 Thumbs.db
 .vscode/
+
+# Local source captures and personal backup variants are not release assets.
+screenshot/
+src/*-FatMuen.js

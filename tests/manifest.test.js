@@ -6,21 +6,37 @@ const crypto = require("node:crypto");
 
 const root = path.resolve(__dirname, "..");
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
+const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 
 test("manifest is a minimal Manifest V3 extension", () => {
   assert.equal(manifest.manifest_version, 3);
   assert.deepEqual(manifest.permissions, ["storage"]);
-  assert.deepEqual(manifest.content_scripts[0].matches, ["https://course.ntu.edu.tw/priority/list/*"]);
-  assert.deepEqual(manifest.content_scripts[1].matches, ["https://course.ntu.edu.tw/priority/table"]);
-  assert.ok(manifest.content_scripts[1].js.includes("src/table.js"));
-  assert.deepEqual(manifest.content_scripts[2].matches, [
+  assert.deepEqual(manifest.content_scripts[0].matches, ["https://course.ntu.edu.tw/*"]);
+  assert.deepEqual(manifest.content_scripts[0].js, ["src/navigation.js"]);
+  assert.deepEqual(manifest.content_scripts[1].matches, ["https://course.ntu.edu.tw/priority/list/*"]);
+  assert.deepEqual(manifest.content_scripts[2].matches, ["https://course.ntu.edu.tw/priority/table"]);
+  assert.ok(manifest.content_scripts[2].js.includes("src/table.js"));
+  assert.deepEqual(manifest.content_scripts[3].matches, [
     "https://if192.aca.ntu.edu.tw/rtcourse/coutake/rt1-runo2-new*"
   ]);
-  assert.deepEqual(manifest.content_scripts[2].js, [
+  assert.deepEqual(manifest.content_scripts[3].js, [
     "src/sort-utils.js",
     "src/import-utils.js",
     "src/import.js"
   ]);
+  assert.deepEqual(manifest.content_scripts[4].matches, [
+    "https://if177.aca.ntu.edu.tw/coursetake/ctake/import-cou*"
+  ]);
+  assert.deepEqual(manifest.content_scripts[4].js, [
+    "src/sort-utils.js",
+    "src/import-utils.js",
+    "src/second-stage-import.js"
+  ]);
+});
+
+test("manifest and package versions stay in sync", () => {
+  assert.equal(manifest.version, "0.7.4");
+  assert.equal(manifest.version, packageJson.version);
 });
 
 test("manifest contains a stable public key for development installs", () => {
@@ -38,7 +54,12 @@ test("manifest contains a stable public key for development installs", () => {
 test("every manifest file reference exists", () => {
   const referencedFiles = [
     manifest.action.default_popup,
-    ...manifest.content_scripts.flatMap((entry) => [...entry.js, ...entry.css])
+    ...Object.values(manifest.icons || {}),
+    ...Object.values(manifest.action.default_icon || {}),
+    ...manifest.content_scripts.flatMap((entry) => [
+      ...(entry.js || []),
+      ...(entry.css || [])
+    ])
   ];
 
   referencedFiles.forEach((file) => {

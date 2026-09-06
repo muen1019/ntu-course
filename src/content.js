@@ -149,6 +149,12 @@
     return findRows().filter((row) => row.dataset.ntuPriorityKey);
   }
 
+  function observedRows() {
+    return findRows()
+      .map((row) => ({ row, key: getCourseKey(row) }))
+      .filter(({ key }) => key);
+  }
+
   function currentOrder() {
     return currentRows().map((row) => row.dataset.ntuPriorityKey);
   }
@@ -206,6 +212,37 @@
     return new Promise((resolve) => {
       window.requestAnimationFrame(() => window.requestAnimationFrame(resolve));
     });
+  }
+
+  function waitFor(milliseconds) {
+    return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+  }
+
+  async function waitForStableRows(timeoutMs = 5000) {
+    const deadline = performance.now() + timeoutMs;
+    let lastSignature = "";
+
+    while (performance.now() < deadline) {
+      if (state.rowGestureActive || state.restoreCancelled) {
+        return observedRows().map(({ row }) => row);
+      }
+
+      const rows = observedRows();
+      if (!rows.length) {
+        await waitFor(50);
+        continue;
+      }
+
+      const signature = orderSignature(rows.map(({ key }) => key));
+      await afterRender();
+      const currentSignature = orderSignature(observedRows().map(({ key }) => key));
+      if (signature === currentSignature && signature === lastSignature) {
+        return currentRows();
+      }
+      lastSignature = signature;
+    }
+
+    return observedRows().map(({ row }) => row);
   }
 
   function setNativeInputValue(input, value) {
@@ -399,8 +436,19 @@
 
   async function performInitialRestore() {
     state.restoreCancelled = false;
+    // Next.js/React may still be hydrating when a document-idle content script
+    // starts. Wait for two paint cycles and a stable row list before touching
+    // the DOM; otherwise React can replace the rows after we restore them.
+    await afterRender();
+    const rows = await waitForStableRows();
+    if (state.rowGestureActive || state.restoreCancelled) {
+      state.initialRestoreComplete = true;
+      window.clearTimeout(state.refreshTimer);
+      observer.disconnect();
+      return;
+    }
+
     ensureStatus();
-    const rows = currentRows();
     if (!rows.length) {
       setStatus("等待課程資料載入", "working");
       return;
@@ -409,6 +457,17 @@
     state.body = rows[0].parentElement;
     const stored = await readStoredRecord();
     state.savedOrder = stored?.order || null;
+
+    // Reading chrome.storage is asynchronous. Give the page one more stable
+    // render window in case React finishes hydrating while that read is in
+    // flight, so the restore is applied to the final row instances.
+    await waitForStableRows(2000);
+    if (state.rowGestureActive || state.restoreCancelled) {
+      state.initialRestoreComplete = true;
+      window.clearTimeout(state.refreshTimer);
+      observer.disconnect();
+      return;
+    }
 
     if (state.savedOrder?.length && !state.rowGestureActive && !state.restoreCancelled) {
       const restored = await applySavedOrder();

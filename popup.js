@@ -11,6 +11,11 @@
     window.close();
   });
 
+  document.querySelector("#open-second-stage").addEventListener("click", () => {
+    chrome.tabs.create({ url: "https://if177.aca.ntu.edu.tw/coursetake/ctake/import-cou" });
+    window.close();
+  });
+
   document.querySelector("#open-demo").addEventListener("click", () => {
     chrome.tabs.create({ url: chrome.runtime.getURL("demo.html") });
     window.close();

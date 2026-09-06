@@ -45,6 +45,14 @@
 
 若單門課送出後被選課系統以資格不符或其他課程條件拒絕，擴充功能會記錄該門課與校方回傳原因，略過後繼續處理下一門。只有登入逾時、網路錯誤或正式表單結構無法辨識等系統性錯誤才會停止整批。
 
+### 初選第二階段
+
+在初選二階的「匯入課程」頁面按「預覽二階匯入」，擴充功能會依課程網的相對順序列出可登記課程，並讀取目前退選清單中的已選課程與上課時間。預覽中的「名額競爭」以「登記人數｜剩餘可選上名額」顯示，並以綠、橘、紅提示競爭程度；剩餘名額為限制人數減去已選人數。若候選課程與已選課程使用相同節次，預覽會標示衝堂課名與重疊節次。
+
+選課紀錄中的志願課程也會依原志願順序顯示，並從二階首頁的志願序欄區分狀態：有志願序、仍待分發者顯示「已登記」，志願序欄空白、已確定選上者才顯示「已選上」。衝堂檢查只會比對「已選上」的課，不會把其他仍待分發的「已登記」課程列為衝堂。有衝堂的候選課程預設不會送出登記；使用者必須在預覽中勾選所有與它衝堂的已選課程，且這些課程都成功退選後，候選課程才會進入登記佇列。若被勾選退選的課程也存在志願序中，退選成功後會回到同一份登記佇列，依原志願順序重新登記。確認按鈕會明確列出退選與登記門數，並在真正送出前再次提醒。退選會先執行，若後續登記因人數、資格或其他原因失敗，擴充功能不會自動復原退選。
+
+二階的登記與退選都會先讀取校方確認頁，再帶入「確定登記／確定退選」欄位送出正式表單；登記時使用課程網中的原始順位作為衝堂志願序。每筆送出後會重新讀取退選清單驗證是否成功。
+
 當網站新增一門尚未記錄的課程時，既有課程順序會保持不變，新課程預設接在最後；之後仍可照原本方式手動調整。
 
 擴充功能只會在志願序頁面初次載入時還原一次排序。頁面保持開啟期間，拖曳與數字修改只會更新儲存資料，不會由背景同步或畫面更新再次重排，避免操作中的順序跳動。
@@ -73,29 +81,17 @@ npm run check
 
 ## 上架 Chrome Web Store
 
-目前專案可以直接用「載入未封裝項目」測試；正式上架前，請先準備商店素材：
+完整的商店文案、Privacy practices 欄位、審查測試步驟與送審 checklist，請見 [`docs/chrome-web-store-submission.md`](docs/chrome-web-store-submission.md)。可公開發布的政策原始文件位於 [`docs/privacy-policy.md`](docs/privacy-policy.md)，GitHub Pages 使用的靜態頁面為 [`docs/privacy-policy.html`](docs/privacy-policy.html)。
 
-- 在 `manifest.json` 加入至少一個 PNG 圖示，建議提供 16、48、128 px 三種尺寸；128 px 會用於安裝與商店頁面。
-- 準備至少一張 1280×800 或 640×400 的實際操作截圖（例如拖曳排序後顯示「已儲存並同步」的頁面）。
-- 準備商店名稱、132 字元內的摘要、詳細描述、支援聯絡方式，以及隱私權／資料使用說明。
+建立 Chrome Web Store ZIP：
 
-隱私權說明草稿在 [`docs/privacy-policy.md`](docs/privacy-policy.md)，上架時請補上實際聯絡方式，並把它放到可公開存取的支援／隱私權頁面（若 Dashboard 要求 URL）。
+```powershell
+npm run package:chrome
+```
 
-上架流程：
+產生的 ZIP 會放在 `dist/`，只包含執行所需檔案。打包程序會自動移除只供 Edge／本機開發固定 ID 使用的 manifest `key`，而不修改 source manifest；Chrome Web Store 版本由商店管理自己的 Item ID，細節見 [`docs/edge-key-setup.md`](docs/edge-key-setup.md)。
 
-1. 以 Google 帳號開啟 [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole)，註冊 Chrome Web Store 開發者帳號並支付一次性註冊費。
-   - 若要在「載入未封裝項目」階段也跨裝置測試，先建立草稿項目，從 **Package → View public key** 取得公開金鑰，放進 `manifest.json` 的 `key` 欄位，再把同一份資料夾載入各裝置；官方說明見 [保持一致的 extension ID](https://developer.chrome.com/docs/extensions/reference/manifest/key)。正式上架後則以商店項目的 ID 為準。
-2. 將這個資料夾壓成 ZIP；`manifest.json` 必須位於 ZIP 根目錄，不要多包一層專案資料夾。可用 PowerShell：
-
-   ```powershell
-   Compress-Archive -Path manifest.json,popup.html,popup.css,popup.js,src,demo.html,demo.css,demo-native.js,demo-runtime.js,docs -DestinationPath ntu-course-priority.zip -Force
-   ```
-
-3. Dashboard → **Add new item** → **Choose file** 上傳 ZIP。
-4. 填寫 **Store Listing**、**Privacy**、**Distribution**、**Test instructions**；資料使用欄位要如實說明排序資料會寫入 `chrome.storage.sync`，由瀏覽器同步到同一帳號的裝置，本擴充功能沒有自有伺服器。
-5. 按 **Submit for Review**，通過審查後再選擇立即發布或延後發布。日後更新時提高 `manifest.json` 的 `version`，重新打包並上傳新 ZIP。
-
-Chrome Web Store 會要求非空白描述、圖示與截圖；因此目前這個開發版仍需補上你的品牌圖示與商店截圖後，才適合送審。
+目前圖示已完成，送審前仍需準備至少一張商店截圖與 440×280 small promotional tile，並在 GitHub Pages 公開隱私權政策頁面。
 
 ## 後續範圍
 

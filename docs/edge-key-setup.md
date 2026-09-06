@@ -43,3 +43,11 @@ C:\Users\muen1\AppData\Local\ntu-course-extension-key\ntu-course-extension.pem
 - 志願序資料由 Edge 的 `storage.sync` 與 Edge Sync 處理。
 - 兩台同時修改時，最後同步的順序可能覆蓋較早的修改。
 - 不要刪除或遺失私密金鑰；遺失後仍可使用目前已安裝的版本，但不能安全地製作同一 ID 的新封裝版本。
+
+## 與 Chrome Web Store 的關係
+
+`manifest.json` 內的公開金鑰只用來保留既有 Edge／載入未封裝版本的固定 ID。它不是 Chrome Web Store 項目的簽章金鑰，也不應直接決定 Chrome 商店版本的 Item ID。
+
+執行 `npm run package:chrome` 時，`scripts/package-chrome.ps1` 會在產生的 Chrome ZIP 中自動移除 `key`，但不修改 source manifest。Chrome Web Store 會為商店項目管理自己的簽章與 ID。這樣既有 Edge 安裝仍維持 `hjhkdadbnmlgkdnjjlfbklackeaeaefg`，Chrome 商店版本則使用 Dashboard 顯示的 Item ID。
+
+若未來確實需要讓「載入未封裝的 Chrome 測試版」與 Chrome Web Store 版具有相同 ID，請先建立商店草稿，再到 Dashboard 的 Package → View public key 取得 Chrome public key，並另外建立 Chrome 專用的測試 manifest；不要覆蓋目前的 Edge public key。
